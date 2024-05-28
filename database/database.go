@@ -5,7 +5,7 @@ import (
 	"crypto/x509"
 	"database/sql"
 	"fmt"
-	"github.com/dendun-nf/gin-golang-web-test/src/internal/todo"
+	"github.com/dendun-nf/gin-golang-web-test/internal/todo"
 	goMysql "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
@@ -26,7 +26,7 @@ func init() {
 	dbPort := os.Getenv("DB_PORT")
 	dbSSLCertPath := os.Getenv("DB_SSL_CERT_PATH")
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?tls=custom",
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?tls=custom&charset=utf8mb4&parseTime=True",
 		dbUser,
 		dbPassword,
 		dbHost,
@@ -67,17 +67,15 @@ func init() {
 			TablePrefix:   "t_",
 		},
 	})
-
 	if err != nil {
 		log.Fatalf("Error attached to GORM: %v", err)
 	}
 
 	err = gormDB.AutoMigrate(&todo.Todo{})
-
 	if err != nil {
 		log.Fatalf("Error Migrating Data: %v", err)
 	}
 
 	GormDb = gormDB
-	fmt.Println("Connected to database successfully")
+	log.Println("Connected to database successfully")
 }

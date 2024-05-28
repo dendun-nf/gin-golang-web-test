@@ -1,12 +1,12 @@
 package todo
 
 import (
-	"github.com/dendun-nf/gin-golang-web-test/src/helper"
+	"github.com/dendun-nf/gin-golang-web-test/helper"
 	"gorm.io/gorm"
 )
 
 type Todo struct {
-	gorm.Model
+	*gorm.Model
 	Title string
 	Done  bool
 }
