@@ -71,7 +71,7 @@ func init() {
 		log.Fatalf("Error attached to GORM: %v", err)
 	}
 
-	err = gormDB.AutoMigrate(&todo.Todo{})
+	err = gormDB.AutoMigrate(&todo.Model{})
 	if err != nil {
 		log.Fatalf("Error Migrating Data: %v", err)
 	}

@@ -1,17 +1,21 @@
 package todo
 
 import (
-	"github.com/dendun-nf/gin-golang-web-test/helper"
+	"github.com/dendun-nf/gin-golang-web-test/internal/helper"
 	"gorm.io/gorm"
 )
 
-type Todo struct {
+type Model struct {
 	*gorm.Model
 	Title string
 	Done  bool
 }
 
-func (todo *Todo) Update(title string, done bool) {
+func (*Model) TableName() string {
+	return "todo"
+}
+
+func (todo *Model) Update(title string, done bool) {
 	todo.Title = helper.GetNotDefault(todo.Title, title)
 	todo.Done = helper.GetNotDefault(todo.Done, done)
 }

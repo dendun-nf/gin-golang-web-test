@@ -1,14 +1,14 @@
 package service
 
 import (
-	"github.com/dendun-nf/gin-golang-web-test/database"
+	"github.com/dendun-nf/gin-golang-web-test/internal/database"
 	"github.com/dendun-nf/gin-golang-web-test/internal/todo"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 func Index(c *gin.Context) {
-	var todos *[]todo.Todo
+	var todos *[]todo.Model
 	if err := database.GormDb.Find(&todos).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err,
@@ -29,7 +29,7 @@ func Index(c *gin.Context) {
 }
 
 func GetById(c *gin.Context) {
-	var todo *todo.Todo
+	var todo *todo.Model
 	tx := database.GormDb.Where("id = ?", c.Param("id")).First(&todo).Where("deleted_at = ?", nil)
 
 	if tx.Error != nil {
@@ -41,7 +41,7 @@ func GetById(c *gin.Context) {
 
 	if &todo == nil {
 		c.JSON(http.StatusNotFound, gin.H{
-			"error": "Todo not found",
+			"error": "Model not found",
 		})
 		return
 	}
@@ -65,9 +65,9 @@ func Add(c *gin.Context) {
 		return
 	}
 
-	todos := &[]todo.Todo{}
+	todos := &[]todo.Model{}
 	for _, request := range *todoRequests {
-		t := todo.Todo{
+		t := todo.Model{
 			Title: request.Title,
 			Done:  request.Done,
 		}
@@ -81,7 +81,7 @@ func Add(c *gin.Context) {
 }
 
 func Update(c *gin.Context) {
-	var todoTarget todo.Todo
+	var todoTarget todo.Model
 	var todoUpdate *todo.UpdateRequestDto
 
 	if err := c.BindJSON(&todoUpdate); err != nil {
@@ -113,7 +113,7 @@ func Update(c *gin.Context) {
 }
 
 func Delete(c *gin.Context) {
-	var todoTarget *todo.Todo
+	var todoTarget *todo.Model
 	db := database.GormDb.Where("id = ?", c.Param("id")).First(&todoTarget).Where("deleted_at = ?", nil)
 	if db.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{
