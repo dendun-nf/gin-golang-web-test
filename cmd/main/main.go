@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "github.com/dendun-nf/gin-golang-web-test/database"
+	_ "github.com/dendun-nf/gin-golang-web-test/internal/database"
 	"github.com/dendun-nf/gin-golang-web-test/internal/todo/service"
 	"github.com/gin-gonic/gin"
 )
