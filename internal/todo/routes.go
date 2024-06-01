@@ -1,15 +1,35 @@
-package service
+package todo
 
 import (
-	"github.com/dendun-nf/gin-golang-web-test/internal/database"
-	"github.com/dendun-nf/gin-golang-web-test/internal/todo"
+	"github.com/dendun-nf/gin-golang-web-test/internal/commons"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-func Index(c *gin.Context) {
-	var todos *[]todo.Model
-	if err := database.GormDb.Find(&todos).Error; err != nil {
+const routePath = "/todos"
+
+type Endpoints struct {
+	basePath string
+}
+
+func NewEndpoints() *Endpoints {
+	return &Endpoints{
+		basePath: routePath,
+	}
+}
+
+func (e *Endpoints) MapEndpoint(r *gin.RouterGroup) {
+	base := r.Group(e.basePath)
+	base.GET("", index)
+	base.GET("/:id", getById)
+	base.POST("", add)
+	base.PATCH("/:id", update)
+	base.DELETE("/:id", remove)
+}
+
+func index(c *gin.Context) {
+	var todos []Model
+	if err := commons.GormDb.Find(&todos).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err,
 		})
@@ -28,9 +48,9 @@ func Index(c *gin.Context) {
 
 }
 
-func GetById(c *gin.Context) {
-	var todo *todo.Model
-	tx := database.GormDb.Where("id = ?", c.Param("id")).First(&todo).Where("deleted_at = ?", nil)
+func getById(c *gin.Context) {
+	var todo Model
+	tx := commons.GormDb.Where("id = ?", c.Param("id")).First(&todo).Where("deleted_at = ?", nil)
 
 	if tx.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -49,8 +69,8 @@ func GetById(c *gin.Context) {
 	c.JSON(http.StatusOK, todo)
 }
 
-func Add(c *gin.Context) {
-	var todoRequests *[]todo.AddRequestDto
+func add(c *gin.Context) {
+	var todoRequests []AddRequestDto
 	if err := c.BindJSON(&todoRequests); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,
@@ -65,24 +85,24 @@ func Add(c *gin.Context) {
 		return
 	}
 
-	todos := &[]todo.Model{}
-	for _, request := range *todoRequests {
-		t := todo.Model{
+	todos := &[]Model{}
+	for _, request := range todoRequests {
+		t := Model{
 			Title: request.Title,
 			Done:  request.Done,
 		}
 
 		*todos = append(*todos, t)
 	}
-	database.GormDb.Create(todos)
+	commons.GormDb.Create(todos)
 	c.JSON(http.StatusOK, gin.H{
 		"action": "Executed Successfully",
 	})
 }
 
-func Update(c *gin.Context) {
-	var todoTarget todo.Model
-	var todoUpdate *todo.UpdateRequestDto
+func update(c *gin.Context) {
+	var todoTarget Model
+	var todoUpdate UpdateRequestDto
 
 	if err := c.BindJSON(&todoUpdate); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -91,7 +111,7 @@ func Update(c *gin.Context) {
 		return
 	}
 
-	db := database.GormDb.Where("id = ?", todoUpdate.ID).First(&todoTarget).Where("deleted_at = ?", nil)
+	db := commons.GormDb.Where("id = ?", todoUpdate.ID).First(&todoTarget).Where("deleted_at = ?", nil)
 	if db.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": db.Error,
@@ -105,23 +125,23 @@ func Update(c *gin.Context) {
 		todoUpdate.Done,
 	)
 
-	database.GormDb.Save(&todoTarget)
+	commons.GormDb.Save(&todoTarget)
 
 	c.JSON(http.StatusOK, gin.H{
 		"action": "Executed Successfully",
 	})
 }
 
-func Delete(c *gin.Context) {
-	var todoTarget *todo.Model
-	db := database.GormDb.Where("id = ?", c.Param("id")).First(&todoTarget).Where("deleted_at = ?", nil)
+func remove(c *gin.Context) {
+	var todoTarget *Model
+	db := commons.GormDb.Where("id = ?", c.Param("id")).First(&todoTarget).Where("deleted_at = ?", nil)
 	if db.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error": db.Error,
 		})
 		return
 	}
-	if err := database.GormDb.Delete(&todoTarget).Error; err != nil {
+	if err := commons.GormDb.Delete(&todoTarget).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err,
 		})

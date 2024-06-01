@@ -15,9 +15,7 @@ import (
 	"os"
 )
 
-var GormDb *gorm.DB
-
-func init() {
+func ConnectDatabase() *gorm.DB {
 	_ = godotenv.Load(".env.development")
 	dbHost := os.Getenv("DB_HOST")
 	dbName := os.Getenv("DB_NAME")
@@ -76,6 +74,7 @@ func init() {
 		log.Fatalf("Error Migrating Data: %v", err)
 	}
 
-	GormDb = gormDB
 	log.Println("Connected to database successfully")
+
+	return gormDB
 }
